@@ -103,7 +103,7 @@ export const getUserPosts = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized. User not found." });
     }
 
-    const posts = await Post.find({ author: userId }).sort({ createdAt: -1 });
+    const posts = await Post.find({ author: userId }).sort({ createdAt: -1 }).populate("author" , "name email")
 
     res.status(200).json({
       message: "User posts fetched successfully.",
