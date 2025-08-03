@@ -52,7 +52,7 @@ export const usePostStore = create<PostStore>((set) => ({
   getUserPosts: async () => {
     try {
       set({ loading: true, error: null });
-      const res = await axios.get(`${backendUrl}/api/posts/me`);
+      const res = await axios.get(`${backendUrl}/api/posts/me` , {withCredentials: true});
       set({ userPosts: res.data.posts, loading: false });
     } catch (err: unknown) {
       const message = axios.isAxiosError(err)
