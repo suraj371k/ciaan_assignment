@@ -18,13 +18,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PenTool, Send, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 const CreatePost = () => {
   const { createPost, loading } = usePostStore();
   const { user } = useAuthStore();
   const [post, setPost] = useState({ title: "", content: "" });
   const router = useRouter();
+
+  useEffect(() => {
+    if(!user){
+      router.push('/login')
+    }
+  })
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -57,7 +62,6 @@ const CreatePost = () => {
   const isFormValid = post.title.trim() && post.content.trim();
 
   return (
-    <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-12 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Header Section */}
@@ -196,7 +200,6 @@ const CreatePost = () => {
           </Card>
         </div>
       </div>
-    </ProtectedRoute>
   );
 };
 

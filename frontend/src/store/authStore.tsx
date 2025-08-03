@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import axios from "axios";
 import { backendUrl } from "@/utils/api";
 
@@ -10,93 +11,121 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null | undefined;
+  user: User | null;
   loading: boolean;
   error: string | null;
-
-  register: (name: string, email: string, password: string , bio: string) => Promise<void>;
+  isInitialized: boolean;
+  
+  register: (name: string, email: string, password: string, bio: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  profile: () => void;
+  logout: () => Promise<void>;
+  profile: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  loading: false,
-  error: null,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      loading: false,
+      error: null,
+      isInitialized: false,
 
-  register: async (name: string, email: string, password: string , bio: string) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.post(
-        `${backendUrl}/api/user/register`,
-        {
-          name,
-          email,
-          password,
-          bio
-        },
-        { withCredentials: true }
-      );
-      set({ user: response.data.user, loading: false, error: null });
-    } catch (error: any) {
-      set({
-        error: error.response?.data?.message || "Registration failed",
-        loading: false,
-      });
-      throw error;
-    }
-  },
+      register: async (name, email, password, bio) => {
+        set({ loading: true, error: null });
+        try {
+          const response = await axios.post(
+            `${backendUrl}/api/user/register`,
+            { name, email, password, bio },
+            { withCredentials: true }
+          );
+          set({ user: response.data.user, loading: false, error: null });
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || "Registration failed";
+          set({ error: errorMessage, loading: false });
+          throw error;
+        }
+      },
 
-  login: async (email: string, password: string) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await axios.post(
-        `${backendUrl}/api/user/login`,
-        { email, password },
-        { withCredentials: true }
-      );
-      set({ user: response.data.user, loading: false });
-    } catch (error: any) {
-      set({
-        error: error.response?.data?.message || "Login failed",
-        loading: false,
-      });
-      throw error;
-    }
-  },
+      login: async (email, password) => {
+        set({ loading: true, error: null });
+        try {
+          const response = await axios.post(
+            `${backendUrl}/api/user/login`,
+            { email, password },
+            { withCredentials: true }
+          );
+          set({ user: response.data.user, loading: false, error: null });
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || "Login failed";
+          set({ error: errorMessage, loading: false });
+          throw error;
+        }
+      },
 
-  logout: async () => {
-    try {
-      set({ loading: true, error: null });
-      await axios.post(
-        `${backendUrl}/api/user/logout`,
-        {},
-        { withCredentials: true }
-      );
-      set({ user: null, loading: false });
-    } catch (error: any) {
-      set({
-        error: error.response?.data?.message || "Logout failed",
-        loading: false,
-      });
-      throw error;
-    }
-  },
+      logout: async () => {
+        set({ loading: true, error: null });
+        try {
+          await axios.post(`${backendUrl}/api/user/logout`, {}, { withCredentials: true });
+          set({ user: null, loading: false, error: null });
+        } catch (error: any) {
+          // Even if logout fails on server, clear local state
+          set({ user: null, loading: false, error: null });
+          console.error("Logout error:", error);
+        }
+      },
 
-  profile: async () => {
-    try {
-      set({ loading: true, error: null });
-      const response = await axios.get(`${backendUrl}/api/user/profile`, {
-        withCredentials: true,
-      });
-      set({ user: response.data.user, loading: false });
-    } catch (error: any) {
-      set({
-        error: error.response?.data?.message || "fetch profile failed",
-        loading: false,
-      });
-      throw error;
+      profile: async () => {
+        set({ loading: true, error: null });
+        try {
+          const response = await axios.get(`${backendUrl}/api/user/profile`, {
+            withCredentials: true,
+          });
+          set({ user: response.data.user, loading: false, error: null });
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || "Profile fetch failed";
+          set({ error: errorMessage, loading: false, user: null });
+          throw error;
+        }
+      },
+
+      checkAuth: async () => {
+        // Only check auth if we haven't initialized yet
+        if (get().isInitialized) return;
+        
+        set({ loading: true, error: null });
+        try {
+          const response = await axios.get(`${backendUrl}/api/user/profile`, {
+            withCredentials: true,
+          });
+          set({ 
+            user: response.data.user, 
+            loading: false, 
+            error: null,
+            isInitialized: true 
+          });
+        } catch (error: any) {
+          // If auth check fails, user is not authenticated
+          set({ 
+            user: null, 
+            loading: false, 
+            error: null,
+            isInitialized: true 
+          });
+        }
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+    }),
+    {
+      name: "auth-storage",
+      partialize: (state) => ({ 
+        user: state.user,
+        isInitialized: state.isInitialized 
+      }),
     }
-  },
-}));
+  )
+);

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect } from "react";
+import  AuthProvider from "@/components/ProtectedRoute";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,15 +24,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user , profile } = useAuthStore()
   
-  useEffect(() => {
-     if(!user){
-      profile()
-     }
-  } , [profile])
   return (
     <html lang="en">
+      <AuthProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -40,6 +36,7 @@ export default function RootLayout({
         <Footer />
         <Toaster />
       </body>
+      </AuthProvider>
     </html>
   );
 }
