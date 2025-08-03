@@ -64,37 +64,6 @@ export const deletePost = async (req, res) => {
   }
 };
 
-export const updatePost = async (req, res) => {
-  try {
-    const postId = req.params.id;
-    const userId = req.user?._id;
-    const { title, content } = req.body;
-
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found." });
-    }
-
-    // Check if the user is the author of the post
-    if (post.author.toString() !== userId.toString()) {
-      return res.status(403).json({ message: "You are not authorized to update this post." });
-    }
-
-    if (title !== undefined) post.title = title;
-    if (content !== undefined) post.content = content;
-
-    const updatedPost = await post.save();
-
-    res.status(200).json({
-      message: "Post updated successfully.",
-      post: updatedPost,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update post.", error: error.message });
-  }
-};
-
 export const getUserPosts = async (req, res) => {
   try {
     const userId = req.user?._id;

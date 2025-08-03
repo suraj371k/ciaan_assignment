@@ -10,11 +10,11 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null;
+  user: User | null | undefined;
   loading: boolean;
   error: string | null;
 
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string , bio: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   profile: () => void;
@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   error: null,
 
-  register: async (name: string, email: string, password: string) => {
+  register: async (name: string, email: string, password: string , bio: string) => {
     set({ loading: true, error: null });
     try {
       const response = await axios.post(
@@ -34,6 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           name,
           email,
           password,
+          bio
         },
         { withCredentials: true }
       );

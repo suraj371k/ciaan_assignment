@@ -12,6 +12,7 @@ const RegisterPage = () => {
     name: "",
     email: "",
     password: "",
+    bio: ""
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,9 +28,9 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await register(form.name, form.email, form.password);
+      await register(form.name, form.email, form.password , form.bio);
       toast.success("Registration successful! Please login.");
-      router.push('/login')
+      router.push('/')
     } catch (err: any) {
       toast.error(error || "Registration failed. Please try again.");
     }
@@ -59,6 +60,25 @@ const RegisterPage = () => {
               required
               className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
               placeholder="Your name"
+            />
+          </div>
+            <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Bio
+            </label>
+            <input
+              id="name"
+              name="bio"
+              type="text"
+              onChange={handleInputChange}
+              value={form.bio}
+              autoComplete="bio"
+              required
+              className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+              placeholder="Bio"
             />
           </div>
           <div>

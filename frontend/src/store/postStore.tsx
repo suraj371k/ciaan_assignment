@@ -3,7 +3,7 @@ import axios from "axios";
 import { backendUrl } from "@/utils/api";
 
 interface Post {
-  id: string;
+  _id: string;
   title: string;
   content: string;
   author: {
@@ -22,10 +22,6 @@ interface PostStore {
   getPosts: () => Promise<void>;
   getUserPosts: () => Promise<void>;
   createPost: (title: string, content: string) => Promise<void>;
-  updatePost: (
-    id: string,
-    data: Partial<Omit<Post, "id" | "authorId">>
-  ) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
 }
 
@@ -41,7 +37,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
       const res = await axios.get(`${backendUrl}/api/posts`, {
         withCredentials: true,
       });
-      set({ posts: res.data.posts, loading: false }); // ✅ get the actual array
+      set({ posts: res.data.posts, loading: false }); 
     } catch (err: any) {
       set({ error: err.message || "Failed to fetch posts", loading: false });
     }
@@ -53,7 +49,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
       const res = await axios.get(`${backendUrl}/api/posts/me`, {
         withCredentials: true,
       });
-      set({ userPosts: res.data.posts, loading: false }); // ✅ Extract only posts array
+      set({ userPosts: res.data.posts, loading: false });
     } catch (err: any) {
       set({
         error: err.message || "Failed to fetch user posts",
@@ -75,32 +71,17 @@ export const usePostStore = create<PostStore>((set, get) => ({
         throw new Error("Failed to create post");
       }
 
-      // Optionally update state
       set((state) => ({
         posts: [response.data.post, ...state.posts],
       }));
     } catch (error: any) {
       console.error("Post creation failed:", error.message || error);
-      throw error; // ✅ rethrow to allow catching in component
+      throw error; 
     } finally {
       set({ loading: false });
     }
   },
 
-  updatePost: async (id, data) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await axios.put<Post>(`${backendUrl}/api/posts/${id}`, data, {
-        withCredentials: true,
-      });
-      set((state) => ({
-        posts: state.posts.map((post) => (post.id === id ? res.data : post)),
-        loading: false,
-      }));
-    } catch (err: any) {
-      set({ error: err.message || "Failed to update post", loading: false });
-    }
-  },
 
   deletePost: async (id) => {
     set({ loading: true, error: null });
@@ -109,7 +90,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
         withCredentials: true,
       });
       set((state) => ({
-        posts: state.posts.filter((post) => post.id !== id),
+        posts: state.posts.filter((post) => post._id !== id),
         loading: false,
       }));
     } catch (err: any) {
