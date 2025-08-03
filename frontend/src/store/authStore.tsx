@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { backendUrl } from "@/utils/api";
 
 interface User {
@@ -15,7 +15,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isInitialized: boolean;
-  
+
   register: (name: string, email: string, password: string, bio: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -41,10 +41,13 @@ export const useAuthStore = create<AuthState>()(
             { withCredentials: true }
           );
           set({ user: response.data.user, loading: false, error: null });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || "Registration failed";
+        } catch (err: unknown) {
+          const errorMessage =
+            axios.isAxiosError(err) && err.response?.data?.message
+              ? err.response.data.message
+              : "Registration failed";
           set({ error: errorMessage, loading: false });
-          throw error;
+          throw err;
         }
       },
 
@@ -57,10 +60,13 @@ export const useAuthStore = create<AuthState>()(
             { withCredentials: true }
           );
           set({ user: response.data.user, loading: false, error: null });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || "Login failed";
+        } catch (err: unknown) {
+          const errorMessage =
+            axios.isAxiosError(err) && err.response?.data?.message
+              ? err.response.data.message
+              : "Login failed";
           set({ error: errorMessage, loading: false });
-          throw error;
+          throw err;
         }
       },
 
@@ -69,10 +75,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           await axios.post(`${backendUrl}/api/user/logout`, {}, { withCredentials: true });
           set({ user: null, loading: false, error: null });
-        } catch (error: any) {
-          // Even if logout fails on server, clear local state
+        } catch (err: unknown) {
           set({ user: null, loading: false, error: null });
-          console.error("Logout error:", error);
+          console.error("Logout error:", err);
         }
       },
 
@@ -83,35 +88,36 @@ export const useAuthStore = create<AuthState>()(
             withCredentials: true,
           });
           set({ user: response.data.user, loading: false, error: null });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || "Profile fetch failed";
+        } catch (err: unknown) {
+          const errorMessage =
+            axios.isAxiosError(err) && err.response?.data?.message
+              ? err.response.data.message
+              : "Profile fetch failed";
           set({ error: errorMessage, loading: false, user: null });
-          throw error;
+          throw err;
         }
       },
 
       checkAuth: async () => {
-        // Only check auth if we haven't initialized yet
         if (get().isInitialized) return;
-        
+
         set({ loading: true, error: null });
         try {
           const response = await axios.get(`${backendUrl}/api/user/profile`, {
             withCredentials: true,
           });
-          set({ 
-            user: response.data.user, 
-            loading: false, 
+          set({
+            user: response.data.user,
+            loading: false,
             error: null,
-            isInitialized: true 
+            isInitialized: true,
           });
-        } catch (error: any) {
-          // If auth check fails, user is not authenticated
-          set({ 
-            user: null, 
-            loading: false, 
+        } catch (err: unknown) {
+          set({
+            user: null,
+            loading: false,
             error: null,
-            isInitialized: true 
+            isInitialized: true,
           });
         }
       },
@@ -122,9 +128,9 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         user: state.user,
-        isInitialized: state.isInitialized 
+        isInitialized: state.isInitialized,
       }),
     }
   )

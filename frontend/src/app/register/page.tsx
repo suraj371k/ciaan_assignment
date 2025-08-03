@@ -12,7 +12,7 @@ const RegisterPage = () => {
     name: "",
     email: "",
     password: "",
-    bio: ""
+    bio: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,18 +23,19 @@ const RegisterPage = () => {
     }));
   };
 
-  const router = useRouter()
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await register(form.name, form.email, form.password , form.bio);
+      await register(form.name, form.email, form.password, form.bio);
       toast.success("Registration successful! Please login.");
-      router.push('/')
-    } catch (err: any) {
+      router.push("/");
+    } catch {
       toast.error(error || "Registration failed. Please try again.");
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
@@ -62,7 +63,7 @@ const RegisterPage = () => {
               placeholder="Your name"
             />
           </div>
-            <div>
+          <div>
             <label
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -123,7 +124,7 @@ const RegisterPage = () => {
             type="submit"
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 font-semibold text-lg transition"
           >
-            {loading ? "Signing up..": "Sign up"}
+            {loading ? "Signing up.." : "Sign up"}
           </button>
         </form>
         <p className="mt-6 text-center text-gray-500 text-sm">

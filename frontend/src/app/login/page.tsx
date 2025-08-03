@@ -21,12 +21,12 @@ const LoginPage = () => {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       await login(form.email, form.password);
-      toast.success("Login Successfull");
+      toast.success("Login successful");
       router.push("/");
-    } catch (err: any) {
+    } catch {
       toast.error(error || "Login failed. Please try again.");
     }
   };
@@ -71,7 +71,7 @@ const LoginPage = () => {
               value={form.password}
               onChange={handleInputChange}
               type="password"
-              autoComplete="new-password"
+              autoComplete="current-password"
               required
               className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
               placeholder="••••••••"
@@ -81,11 +81,11 @@ const LoginPage = () => {
             type="submit"
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 font-semibold text-lg transition"
           >
-            {loading ? "Logging in...": "Login"}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="mt-6 text-center text-gray-500 text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/register"
             className="text-blue-600 hover:underline font-medium"

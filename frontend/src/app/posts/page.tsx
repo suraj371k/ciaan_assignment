@@ -12,7 +12,7 @@ const PostsList = () => {
 
   useEffect(() => {
     getPosts();
-  }, []);
+  }, [getPosts]);
 
   const handleDeletePost = async (postId: string) => {
     try {
@@ -20,7 +20,7 @@ const PostsList = () => {
       getPosts();
       toast.success("Post deleted successfully");
     } catch (err) {
-      console.log("Error in deleting post", error);
+      console.log("Error in deleting post", err);
     }
   };
 
