@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://ciaan-assignment-xi.vercel.app',
+  origin: ['https://ciaan-assignment-xi.vercel.app' , "http://localhost:3000"],
   credentials: true
 }));
 app.use(express.json());
