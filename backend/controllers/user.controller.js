@@ -1,14 +1,17 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Post from "../models/post.model.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password , bio} = req.body;
+    const { name, email, password, bio } = req.body;
 
     // Basic validation
     if (!name || !email || !password || !bio) {
-      return res.status(400).json({ message: "Name, email, and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Name, email, and password are required." });
     }
 
     // Check if user already exists
@@ -29,16 +32,15 @@ export const register = async (req, res) => {
     });
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     // Respond with user info (excluding password)
     res.status(201).json({
@@ -64,7 +66,9 @@ export const loginUser = async (req, res) => {
 
     // Basic validation
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
     }
 
     // Find user by email
@@ -119,7 +123,6 @@ export const logoutUser = (req, res) => {
   res.status(200).json({ message: "Logout successful." });
 };
 
-
 // Fetch User Profile Controller
 export const getUserProfile = async (req, res) => {
   try {
@@ -139,6 +142,29 @@ export const getUserProfile = async (req, res) => {
         updatedAt: user.updatedAt,
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error.", error: error.message });
+  }
+};
+
+//fetch all users
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    return res.status(200).json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error.", error: error.message });
+  }
+};
+
+//get user by id
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+    const posts = await Post.find({ author: id }).sort({ createdAt: -1 });
+
+    return res.status(200).json({ success: true, user, posts });
   } catch (error) {
     res.status(500).json({ message: "Server error.", error: error.message });
   }
